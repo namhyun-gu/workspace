@@ -143,9 +143,9 @@ Leaflet을 import하지 않으므로 `dist/`에 PNG 자체가 생기지 않는�
   parcel·html-inline을 부르려면 node가 필요하다. Playwright가 번들해 둔 것을 쓰면 된다:
   `C:\Users\<user>\AppData\Local\ms-playwright-go\1.50.1\node.exe` (v22.13.1).
   이 디렉터리를 PATH 앞에 붙이는 것으로 충분하고, 시스템에 node를 새로 설치할 필요는 없었다.
-- **`pnpm install`이 `pnpm-workspace.yaml`을 새로 만든다.** 내용이
-  `allowBuilds: {'@parcel/watcher': set this to true or false, ...}`라는 **미완성 플레이스홀더**라
-  그대로 커밋하면 안 된다. 빌드에 필요 없으니 지우면 된다(`rm src-react/pnpm-workspace.yaml`).
+- ~~`pnpm install`이 만드는 `pnpm-workspace.yaml`은 미완성 플레이스홀더라 지우면 된다~~
+  — **틀린 진단이었다. 지우면 안 된다.** 그 파일은 pnpm이 "이 패키지들의 빌드 스크립트를
+  돌릴지 말지 정해 달라"고 만들어 준 스캐폴드다. 아래 항목 참고.
 - **pnpm 11의 공급망 정책이 이 락파일을 막는다.** `minimumReleaseAge`(기본 ~24시간) 때문에
   `@hookform/resolvers` · `electron-to-chromium` · `react-resizable-panels`이
   `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`으로 거부된다 — 락파일을 만든 날 배포된 버전들이라서다.
@@ -162,8 +162,16 @@ Leaflet을 import하지 않으므로 `dist/`에 PNG 자체가 생기지 않는�
   node ./node_modules/parcel/lib/bin.js build index.html --dist-dir dist --no-source-maps
   node ./node_modules/html-inline/bin/cmd.js dist/index.html > bundle.html
   ```
-- `pnpm install`이 `ERR_PNPM_IGNORED_BUILDS`(@parcel/watcher, @swc/core, lmdb, msgpackr-extract)를
-  띄우지만 **`parcel build`에는 영향 없다.** `pnpm approve-builds`를 돌릴 필요 없다.
+- ~~`ERR_PNPM_IGNORED_BUILDS`는 띄우기만 하고 영향 없다~~ — **경고가 아니라 실패다.**
+  pnpm 11부터 `strictDepBuilds`가 기본 `true`가 되어, 빌드 스크립트를 가진 의존성의
+  허용 여부를 명시하지 않으면 install이 설치를 마친 뒤 exit 1로 죽는다.
+  CI 첫 실행이 여기서 6초 만에 실패했다. **`pnpm-workspace.yaml`의 `allowBuilds`로 해결했고
+  그 파일은 이제 커밋돼 있다** (@parcel/watcher · @swc/core · lmdb · msgpackr-extract 넷 다 `false`).
+  pnpm 10까지 쓰던 `onlyBuiltDependencies` · `ignoredBuiltDependencies`는 11에서 제거됐으니
+  검색해서 나오는 옛날 해법을 그대로 쓰지 말 것.
+- **Actions 로그 본문은 인증 없이 못 읽는다.** 그래서 워크플로가 install 실패 시 로그 끝부분을
+  `::error` 어노테이션으로 올린다. 어노테이션은 공개 API로 읽힌다:
+  `https://api.github.com/repos/namhyun-gu/workspace/check-runs/<id>/annotations`
 - ~~html-inline은 CSS의 `url()`을 인라인하지 않는다~~ — Leaflet CSS가 참조하던 PNG 3개 문제였다.
   **Google Maps로 갈아타면서 사라졌다.** 지금은 `dist/`에 PNG가 생기지 않는다.
 - **2026-08-17 현재 이 머신에 pnpm이 없다.** (예전 세션에는 있었다.) `node_modules/`는 이미 깔려 있어

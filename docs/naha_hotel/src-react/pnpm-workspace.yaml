@@ -1,0 +1,15 @@
+# pnpm 11부터 strictDepBuilds가 기본 true라, 빌드 스크립트(postinstall)를 가진 의존성은
+# 여기서 허용/거부를 명시하지 않으면 install이 ERR_PNPM_IGNORED_BUILDS로 실패한다.
+# (pnpm 10까지 쓰던 onlyBuiltDependencies·ignoredBuiltDependencies는 11에서 제거됐다.)
+#
+# 넷 다 false로 둔다 — parcel build에 필요 없다.
+#   @parcel/watcher   : watch/dev 모드용. 단발 build에는 안 쓴다
+#   lmdb              : Parcel 캐시 백엔드. 네이티브가 없으면 JS로 폴백한다
+#   msgpackr-extract  : 직렬화 가속. 없어도 동작한다
+#   @swc/core         : 프리빌트 바이너리를 optional dep으로 받는다
+# 이 상태로 번들이 정상 생성되는 것을 확인했다(로컬 · CI 동일).
+allowBuilds:
+  '@parcel/watcher': false
+  '@swc/core': false
+  lmdb: false
+  msgpackr-extract: false

@@ -56,7 +56,6 @@ jobs:
             echo "::error title=pnpm install 실패::$(tail -n 40 /tmp/pnpm.log | tr '\n' ';' | tail -c 900)"
             exit 1
           fi
-          rm -f pnpm-workspace.yaml
 
       # pnpm exec 는 실행 전에 install 을 다시 돌려 정책 검사에 또 걸린다. node 로 직접 부른다.
       - name: 단일 HTML 번들
