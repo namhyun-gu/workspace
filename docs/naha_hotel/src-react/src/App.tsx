@@ -103,9 +103,9 @@ export default function App() {
         <Sec t="한눈에 보기" s="아래 필터·정렬이 그대로 적용됩니다. 호텔명은 고정돼 있고, 표를 좌우로 밀면 나머지 항목이 나옵니다. 줄을 누르면 상세로 이동합니다. ◆는 아고다가 상세페이지에 직접 표기한 거리입니다." />
         <ScanTable rows={rows} onJump={jump} />
 
-        <Sec t="지도" s="아고다 좌표 기준 실제 위치입니다. 핀 안의 숫자는 위 표의 순번과 같습니다. 타일은 OpenStreetMap이라 API 키가 필요 없습니다." />
+        <Sec t="지도" s="아고다 좌표 기준 실제 위치입니다. 핀 안의 숫자는 위 표의 순번과 같습니다. 지도는 Google Maps로 그립니다." />
         <div className="rounded-[14px] border border-hair bg-surface-1 p-3 shadow-[var(--shadow)]">
-          <HotelMap rows={rows} onPick={pick} />
+          <HotelMap rows={rows} onPick={pick} dark={dark} />
           <p className="mt-2 text-[12px] text-ink-2">
             {sel ? (
               <>
@@ -258,8 +258,10 @@ export default function App() {
               걷는 속도로 환산한 값입니다.
             </li>
             <li className="mb-1.5">
-              <b>지도</b>: 호텔 좌표는 아고다 상세페이지 표기값입니다. 타일은 <b>OpenStreetMap</b>(Leaflet)으로 API 키나 결제가
-              필요 없습니다. 마름모 두 개는 제1마키시 공설시장·국제거리 서쪽 입구입니다. 휴대폰에서는 지도를 한 번 탭해야
+              <b>지도</b>: 호텔 좌표는 아고다 상세페이지 표기값입니다. 지도는 <b>Google Maps</b>로 그리며, 배포된
+              웹페이지(github.io)에서만 표시되도록 API 키에 리퍼러 제한을 걸어 두었습니다. 따라서 이 파일을 내려받아
+              로컬에서 열면 지도 영역이 비어 보일 수 있고, 그때는 아래 <b>구글 지도에서 열기</b>를 쓰면 됩니다.
+              마름모 두 개는 제1마키시 공설시장·국제거리 서쪽 입구입니다. 휴대폰에서는 지도를 한 번 탭해야
               이동·확대가 켜집니다.
             </li>
             <li>

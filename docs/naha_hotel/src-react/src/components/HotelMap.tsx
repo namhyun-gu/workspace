@@ -1,106 +1,160 @@
 import { useEffect, useRef, useState } from "react";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
 import { LANDMARKS, type Hotel } from "@/data/hotels";
 import { GC, grp, walkTxt, won, areaCell, gmapSearch, gmapDir } from "@/lib/hotel";
+import { gmapsKey, gmapsMapId, loadGmaps } from "@/lib/gmaps";
 
-type Props = { rows: Hotel[]; onPick: (h: Hotel) => void };
+type Props = { rows: Hotel[]; onPick: (h: Hotel) => void; dark: boolean };
+type Status = "loading" | "ready" | "nokey" | "error";
+
+const NAHA = { lat: 26.2155, lng: 127.6855 };
 
 const popupHTML = (h: Hotel) =>
   `<b>${h.name}</b>${won(h.price)} · 3박 ${won(h.price * 3)}<br>` +
   `${areaCell(h)} · 2인 ${h.avail}종 · 평점 ${h.score.toFixed(1)}<br>` +
   `국제거리 ${walkTxt(h)} · 시장 ${h.market}분`;
 
-export default function HotelMap({ rows, onPick }: Props) {
+/** 번호 핀. AdvancedMarkerElement는 content의 하단 중앙을 좌표에 맞추므로 wrap에서 절반 내린다. */
+function pinEl(h: Hotel, n: number) {
+  const wrap = document.createElement("div");
+  wrap.className = "pinwrap";
+  const pin = document.createElement("div");
+  pin.className = `pin g${grp(h) + 1}`;
+  pin.textContent = String(n);
+  pin.dataset.label = h.short;
+  wrap.appendChild(pin);
+  return wrap;
+}
+
+function landmarkEl(name: string) {
+  const wrap = document.createElement("div");
+  wrap.className = "lmkwrap";
+  wrap.dataset.label = name;
+  const dia = document.createElement("div");
+  dia.className = "lmk-dia";
+  wrap.appendChild(dia);
+  return wrap;
+}
+
+export default function HotelMap({ rows, onPick, dark }: Props) {
   const box = useRef<HTMLDivElement>(null);
-  const map = useRef<L.Map | null>(null);
-  const group = useRef<L.LayerGroup | null>(null);
-  const marks = useRef<Map<string, L.Marker>>(new Map());
+  const map = useRef<google.maps.Map | null>(null);
+  const marks = useRef(new Map<string, google.maps.marker.AdvancedMarkerElement>());
+  const info = useRef<google.maps.InfoWindow | null>(null);
+  const pickRef = useRef(onPick);
+  pickRef.current = onPick;
+
+  const [status, setStatus] = useState<Status>("loading");
   const [armed, setArmed] = useState(false);
   const [touch] = useState(() => window.matchMedia("(hover: none)").matches);
 
+  /* 지도 생성. colorScheme은 생성 시점에만 먹으므로 테마가 바뀌면 다시 만든다. */
   useEffect(() => {
-    if (!box.current || map.current) return;
-    const m = L.map(box.current, {
-      scrollWheelZoom: false,
-      dragging: !touch,
-      zoomControl: true,
-    }).setView([26.2155, 127.6855], 15);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      minZoom: 13,
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> 기여자',
-    }).addTo(m);
-    LANDMARKS.forEach((l) => {
-      L.marker([l.lat, l.lng], {
-        icon: L.divIcon({ className: "", html: '<div class="lmk-dia"></div>', iconSize: [11, 11], iconAnchor: [6, 6] }),
+    let dead = false;
+    const key = gmapsKey();
+    if (!key) {
+      setStatus("nokey");
+      return;
+    }
+    setStatus("loading");
+    loadGmaps(key)
+      .then(() => {
+        if (dead || !box.current) return;
+        const m = new google.maps.Map(box.current, {
+          center: NAHA,
+          zoom: 15,
+          minZoom: 13,
+          maxZoom: 19,
+          mapId: gmapsMapId(),
+          colorScheme: dark ? "DARK" : "LIGHT",
+          gestureHandling: "none",
+          zoomControl: true,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false,
+          clickableIcons: false,
+        });
+        info.current = new google.maps.InfoWindow({ maxWidth: 250 });
+        LANDMARKS.forEach((l) => {
+          new google.maps.marker.AdvancedMarkerElement({
+            map: m,
+            position: { lat: l.lat, lng: l.lng },
+            content: landmarkEl(l.n.split(" (")[0]),
+            zIndex: 1,
+          });
+        });
+        /* 이전 지도에 붙어 있던 핀은 재사용할 수 없다 */
+        marks.current.clear();
+        map.current = m;
+        setArmed(false);
+        setStatus("ready");
       })
-        .addTo(m)
-        .bindTooltip(l.n.split(" (")[0], { direction: "top" });
-    });
-    group.current = L.layerGroup().addTo(m);
-    map.current = m;
-    const onResize = () => m.invalidateSize();
-    window.addEventListener("resize", onResize);
-    setTimeout(() => m.invalidateSize(), 200);
-    return () => window.removeEventListener("resize", onResize);
-  }, [touch]);
+      .catch(() => {
+        if (!dead) setStatus("error");
+      });
+    return () => {
+      dead = true;
+      map.current = null;
+      marks.current.clear();
+      info.current = null;
+    };
+  }, [dark]);
 
+  /* 표시 대상이 바뀔 때마다 핀을 갈아끼우고 번호를 다시 매긴다 */
   useEffect(() => {
-    const m = map.current,
-      g = group.current;
-    if (!m || !g) return;
-    g.clearLayers();
+    const m = map.current;
+    if (!m || status !== "ready") return;
+
+    const live = new Set(rows.map((h) => h.name));
+    marks.current.forEach((mk, name) => {
+      if (!live.has(name)) mk.map = null;
+    });
+
+    const bounds = new google.maps.LatLngBounds();
     rows.forEach((h, i) => {
       let mk = marks.current.get(h.name);
       if (!mk) {
-        mk = L.marker([h.lat, h.lng], {
-          icon: L.divIcon({
-            className: "pinwrap",
-            html: `<div class="pin g${grp(h) + 1}">·</div>`,
-            iconSize: [26, 26],
-            iconAnchor: [13, 13],
-          }),
-          riseOnHover: true,
+        mk = new google.maps.marker.AdvancedMarkerElement({
+          position: { lat: h.lat, lng: h.lng },
+          content: pinEl(h, i + 1),
+          gmpClickable: true,
         });
-        mk.bindPopup(popupHTML(h), { maxWidth: 250 });
-        mk.bindTooltip(h.short, { direction: "top", offset: [0, -14], className: "mklab" });
-        mk.on("click", () => onPick(h));
+        const self = mk;
+        mk.addListener("click", () => {
+          info.current?.setContent(popupHTML(h));
+          if (map.current) info.current?.open({ map: map.current, anchor: self });
+          pickRef.current(h);
+        });
         marks.current.set(h.name, mk);
-      }
-      mk.setZIndexOffset(900 - i);
-      g.addLayer(mk);
-    });
-    if (rows.length) {
-      const b = L.latLngBounds(rows.map((h) => [h.lat, h.lng] as [number, number]));
-      LANDMARKS.forEach((l) => b.extend([l.lat, l.lng]));
-      m.fitBounds(b, { padding: [26, 26], maxZoom: 16 });
-    }
-    /* 지도가 ready 된 뒤에 아이콘 DOM이 생기므로 번호는 마지막에 찍는다 */
-    const label = () =>
-      rows.forEach((h, i) => {
-        const el = marks.current.get(h.name)?.getElement();
-        const pin = el?.firstChild as HTMLElement | undefined;
+      } else {
+        const pin = (mk.content as HTMLElement | null)?.firstElementChild as HTMLElement | null;
         if (pin) pin.textContent = String(i + 1);
+      }
+      mk.zIndex = 900 - i;
+      mk.map = m;
+      bounds.extend({ lat: h.lat, lng: h.lng });
+    });
+
+    if (rows.length) {
+      LANDMARKS.forEach((l) => bounds.extend({ lat: l.lat, lng: l.lng }));
+      m.fitBounds(bounds, 26);
+      /* fitBounds는 maxZoom(19)까지 당길 수 있으므로 첫 정착 후 16으로 눌러 준다 */
+      google.maps.event.addListenerOnce(m, "idle", () => {
+        const z = m.getZoom();
+        if (z != null && z > 16) m.setZoom(16);
       });
-    label();
-    const t = setTimeout(label, 60);
-    return () => clearTimeout(t);
-  }, [rows, onPick]);
+    }
+  }, [rows, status]);
 
   const arm = () => {
-    const m = map.current;
-    if (!m) return;
-    m.dragging.enable();
-    m.scrollWheelZoom.enable();
+    map.current?.setOptions({ gestureHandling: "greedy" });
     setArmed(true);
   };
 
   return (
     <div className="relative">
       <div ref={box} id="lmap" />
-      {!armed && (
+
+      {status === "ready" && !armed && (
         <button
           onClick={arm}
           className="absolute inset-0 z-[500] flex items-center justify-center rounded-[11px] bg-black/20"
@@ -110,6 +164,27 @@ export default function HotelMap({ rows, onPick }: Props) {
           </span>
         </button>
       )}
+
+      {status !== "ready" && (
+        <div className="absolute inset-0 flex items-center justify-center rounded-[11px] px-6 text-center text-[12.5px] leading-relaxed text-ink-3">
+          {status === "loading" && "지도를 불러오는 중…"}
+          {status === "nokey" && (
+            <span>
+              지도를 표시하려면 Google Maps API 키가 필요합니다.
+              <br />
+              아래 <b>구글 지도에서 열기</b>로도 같은 위치를 볼 수 있습니다.
+            </span>
+          )}
+          {status === "error" && (
+            <span>
+              지도를 불러오지 못했습니다. 키 제한(리퍼러)이나 네트워크를 확인하세요.
+              <br />
+              아래 <b>구글 지도에서 열기</b>로도 같은 위치를 볼 수 있습니다.
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="mt-2 flex flex-wrap gap-2 text-[11.5px] text-ink-3">
         {["국제거리 3분 이내", "4~8분", "9분 이상"].map((t, i) => (
           <span key={t} className="inline-flex items-center gap-1.5">

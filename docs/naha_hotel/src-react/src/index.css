@@ -130,10 +130,11 @@
 
   /* ===== 지도 ===== */
   #lmap { width: 100%; height: 275px; border-radius: 11px; overflow: hidden; background: var(--surface-2); z-index: 0; }
-  .leaflet-container { font: inherit; background: var(--surface-2); }
-  .dark .leaflet-tile-pane { filter: brightness(0.72) contrast(1.06) saturate(0.85); }
-  .pinwrap { background: none; border: none; }
+
+  /* AdvancedMarkerElement는 content의 하단 중앙을 좌표에 맞춘다. 절반 내려 중심을 맞춘다. */
+  .pinwrap, .lmkwrap { position: relative; transform: translateY(50%); }
   .pinwrap .pin {
+    position: relative;
     width: 26px; height: 26px; border-radius: 9999px; display: flex; align-items: center; justify-content: center;
     font-size: 12.5px; font-weight: 800; color: #fff; border: 2px solid #fff;
     box-shadow: 0 1px 4px rgb(0 0 0 / 0.4); font-variant-numeric: tabular-nums; line-height: 1; cursor: pointer;
@@ -143,10 +144,19 @@
   .pinwrap .pin.g3 { background: var(--s3); }
   .dark .pinwrap .pin { border-color: rgb(255 255 255 / 0.92); }
   .lmk-dia { width: 11px; height: 11px; background: #111; transform: rotate(45deg); border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.2); }
-  .leaflet-tooltip.mklab { background: rgb(20 20 20 / 0.88); border: none; box-shadow: none; color: #fff; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 6px; }
-  .leaflet-tooltip.mklab::before { display: none; }
-  .leaflet-popup-content { margin: 11px 13px; font-size: 13px; line-height: 1.5; color: #111; }
-  .leaflet-popup-content b { font-size: 14px; display: block; margin-bottom: 3px; }
+
+  /* 호버 라벨 (예전 Leaflet tooltip 대체) */
+  .pinwrap .pin::after, .lmkwrap::after {
+    content: attr(data-label);
+    position: absolute; left: 50%; bottom: calc(100% + 7px); transform: translateX(-50%);
+    white-space: nowrap; background: rgb(20 20 20 / 0.88); color: #fff;
+    font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 6px;
+    opacity: 0; transition: opacity 0.12s; pointer-events: none;
+  }
+  @media (hover: hover) {
+    .pinwrap .pin:hover::after, .lmkwrap:hover::after { opacity: 1; }
+  }
+
   @media (max-width: 430px) {
     .pinwrap .pin { width: 23px; height: 23px; font-size: 11.5px; border-width: 1.6px; }
   }
@@ -155,3 +165,8 @@
     table.sc { font-size: 13.5px; min-width: 0; }
   }
 }
+
+/* Google Maps가 런타임에 주입하는 스타일시트는 레이어 밖이라 우선순위가 높다.
+   따라서 InfoWindow 오버라이드는 @layer 바깥에 둬야 한다. */
+.gm-style-iw-d { font: inherit; font-size: 13px; line-height: 1.5; }
+.gm-style-iw-d b { font-size: 14px; display: block; margin-bottom: 3px; }

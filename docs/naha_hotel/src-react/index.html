@@ -4,6 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
+    <!--
+      Google Maps 설정. 값은 커밋하지 않는다.
+      번들 후 scripts/postbundle.mjs 가 GitHub Actions Secret/Variable 로 치환한다.
+      로컬 개발에서는 플레이스홀더가 남고, localStorage.gmapsKey 로 대체된다.
+    -->
+    <meta name="gmaps-key" content="__GMAPS_API_KEY__" />
+    <meta name="gmaps-map-id" content="__GMAPS_MAP_ID__" />
     <title>나하 호텔 29곳 · 2027.01.19–22 · 2인</title>
   </head>
   <body>

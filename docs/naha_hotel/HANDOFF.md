@@ -1,7 +1,10 @@
 # 나하 호텔 비교 프로젝트 — 인수인계 노트
 
 > 다른 세션에서 이어서 작업하려면 이 파일을 먼저 읽히세요.
-> 마지막 작업일: 2026-08-17 / 산출물: `deliverable/나하호텔_29곳_2인.html`
+> 마지막 작업일: 2026-08-17
+> 공개 URL: **https://namhyun-gu.github.io/workspace/** (GitHub Pages)
+> 배포: `.github/workflows/deploy-pages.yml`가 `main` push마다 빌드해서 올린다.
+> 지도는 Google Maps이고 **API 키는 Actions Secret으로만 주입한다** — 아래 "배포" 절을 먼저 읽을 것.
 
 ---
 
@@ -26,35 +29,123 @@
 
 ## 2. 산출물
 
-프로젝트 전체는 `docs/naha_hotel/`로 옮겨졌고, GitHub Pages 진입점은 리포지토리 루트의 `docs/index.html`이다
-(Settings → Pages → Deploy from a branch, `main` / `/docs`).
+프로젝트 전체는 `docs/naha_hotel/`로 옮겨졌고, GitHub Pages 진입점은 리포지토리 루트의 `docs/index.html`이다.
 
 | 경로 | 설명 |
 |---|---|
-| `../index.html` (= `docs/index.html`) | **Pages가 서비스하는 진입점.** 아래 최종본과 동일한 파일을 복사해 둔 것 |
-| `deliverable/나하호텔_29곳_2인.html` | **현재 최종본.** React+TS+Tailwind+shadcn을 단일 HTML로 번들. 467KB, 열면 바로 렌더 |
-| `deliverable/나하호텔_20곳_2인.html` | 이전 버전(20곳, 순수 vanilla JS 단일 파일). 참고용 |
+| `../index.html` (= `docs/index.html`) | Google Maps 전환 이전의 Leaflet 번들(467,000 bytes)이 **아직 커밋돼 있다.** Pages를 Actions로 돌린 뒤 지워야 한다 (아래 "배포" 절 3단계) |
+| `deliverable/나하호텔_29곳_2인.html` | 위와 같은 구버전. CI가 매 배포마다 새로 만들어 올리므로 저장소 사본은 불필요하다 |
 | `data/hotels.json` | 29곳 전체 + 랜드마크 좌표 + 제외 사유 15건. **가장 이식성 좋은 원본** |
 | `data/hotels.csv` | 스프레드시트용 평면 표 (객실 상세는 제외) |
-| `src-react/` | 최종본의 소스 (node_modules·dist 제외) |
+| `src-react/` | 최종본의 소스. `.gitignore`로 `node_modules` · `dist` · `.parcel-cache` · `bundle.html` 제외 |
+| `screenshots/v_desktop.png` · `v_mobile.png` | 이전 세션의 검증 스크린샷 |
+
+이전 버전 `deliverable/나하호텔_20곳_2인.html`(20곳, 순수 vanilla JS)은 **이 저장소에 없다.**
+`docs/`로 옮겨질 때 따라오지 않았고 복원하지 않았다. 29곳 최종본이 이를 완전히 대체한다.
+
+### 배포 — GitHub Actions로 전환 (2026-08-17)
+
+지도를 Google Maps로 바꾸면서 **API 키를 커밋하지 않으려고** 배포를 CI 빌드로 옮겼다.
+워크플로는 `.github/workflows/deploy-pages.yml`이다.
+
+**전환을 마치려면 저장소 설정에서 아래를 먼저 해야 한다:**
+
+1. Settings → Pages → Source 를 **"Deploy from a branch" → "GitHub Actions"** 로 변경
+2. Settings → Secrets and variables → Actions
+   - Secret `GMAPS_API_KEY` — Google Maps JavaScript API 키
+   - Variable `GMAPS_MAP_ID` — Cloud Console에서 만든 Map ID (없으면 `DEMO_MAP_ID`로 대체되나 워터마크가 붙는다)
+3. 1번이 끝난 뒤 커밋된 빌드 산출물(`docs/index.html`, `deliverable/나하호텔_29곳_2인.html`)을 지운다.
+   CI가 매번 새로 만들어 배포하므로 저장소에 둘 이유가 없다.
+   **1번보다 먼저 지우면 사이트가 404가 된다.**
+
+파이프라인: `pnpm install` → Parcel 번들 → html-inline → `scripts/postbundle.mjs`로 키 주입 →
+`docs/`를 `_site/`로 복사(`src-react/` 제외)하고 `index.html`을 갓 만든 번들로 덮어씀 → `actions/deploy-pages`.
+
+#### Google Maps 키 관리 — 반드시 읽을 것
+
+**Maps JS API 키는 브라우저에 노출된다. 숨길 방법이 없다.** 배포된 HTML의 `<meta name="gmaps-key">`에
+그대로 박혀 있다. Actions Secret으로 옮긴 것은 *git 히스토리에 남기지 않기 위함*이지 은닉이 아니다.
+실제 보호막은 Cloud Console 설정 세 가지다:
+
+- **Application restriction** → HTTP referrers → `https://namhyun-gu.github.io/*`
+  (브라우저가 교차 출처 요청에서 Referer를 출처까지만 잘라 보내므로 경로 단위 제한은 신뢰하지 말 것)
+- **API restriction** → Maps JavaScript API 하나만
+- **할당량 상한** — Dynamic Maps는 월 10,000 로드까지 무료, 초과분은 1,000당 $7다.
+  상한을 안 걸면 유일한 실질 리스크가 요금이다.
+
+리퍼러 제한의 대가로 **`file://`로 연 단일 HTML에서는 지도가 뜨지 않는다**(Referer가 아예 안 붙는다).
+그 경우 지도 자리에 안내 문구가 뜨고 "구글 지도에서 열기" 링크로 대체되도록 해 두었다.
+
+로컬 개발에서는 플레이스홀더가 그대로 남으므로 콘솔에서 개인 키를 넣어 쓴다:
+
+```js
+localStorage.gmapsKey = "AIza...";   // 개발용 키 (리퍼러를 localhost로 열어 둔 것)
+localStorage.gmapsMapId = "...";     // 선택. 없으면 DEMO_MAP_ID
+```
+
+### 이전 배포 방식 (참고)
+
+- 저장소: `https://github.com/namhyun-gu/workspace` (공개), 기본 브랜치 `main`
+- Pages: **Deploy from a branch → `main` / `/docs`**. `docs/`가 사이트 루트가 되므로
+  `docs/index.html` → `/workspace/`, `docs/naha_hotel/data/hotels.json` → `/workspace/naha_hotel/data/hotels.json`
+- 배포 커밋: `e41d783 docs: 나하 호텔 비교 문서를 GitHub Pages(/docs)로 배치` (80 파일)
+- 확인된 라이브 경로:
+  - https://namhyun-gu.github.io/workspace/ — 최종본 (HTTP 200, 467,000 bytes)
+  - https://namhyun-gu.github.io/workspace/naha_hotel/data/hotels.json — 원본 데이터
+  - https://namhyun-gu.github.io/workspace/naha_hotel/HANDOFF.md — 이 문서(원문)
+- 푸시 후 첫 요청이 404여도 정상이다. Pages 빌드가 끝나면 뜬다(1분 내외).
+- **main에 직접 푸시해야 사이트가 갱신된다.** Pages 소스가 `main`이라 브랜치를 파면 반영되지 않는다.
+- 이 저장소에는 git identity가 설정돼 있지 않아 `Init commit`의 작성자
+  (`Namhyun Gu <mnhan0403@gmail.com>`)를 저장소 로컬 설정(`git config user.name/email`)으로 넣었다.
 
 ### 최종본 다시 빌드하는 방법
 
+원래 절차는 `web-artifacts-builder` 스킬의 `scripts/bundle-artifact.sh` 한 방이다.
+**다만 2026-08-17 시점에는 그 스크립트가 통째로는 돌지 않는다** — 첫 단계(`pnpm add`)와
+번들 단계(`pnpm exec`)가 아래 pnpm 11 정책 검사에 걸린다. 실제로 통한 순서는 이것이다.
+
 ```bash
 cd src-react
-pnpm install                 # npm은 workspace: 프로토콜 때문에 실패함 → pnpm 사용
-pnpm add leaflet@1.9.4 @types/leaflet   # 이미 package.json에 있으면 생략
-bash <web-artifacts-builder 스킬 경로>/scripts/bundle-artifact.sh
-# → bundle.html 생성 (self-contained)
-node verify.mjs              # Playwright 검증 (아래 4번 참고)
-cp bundle.html deliverable/나하호텔_29곳_2인.html && cp bundle.html ../../index.html
+
+# 1) 의존성 — npm은 workspace: 프로토콜 때문에 실패한다. pnpm을 쓸 것.
+#    (아래 "pnpm 11의 공급망 정책" 항목 참고. 뒤의 --config 3줄이 필요한 이유가 거기 있다.)
+pnpm install --frozen-lockfile \
+  --config.minimumReleaseAgeExclude=@hookform/resolvers \
+  --config.minimumReleaseAgeExclude=electron-to-chromium \
+  --config.minimumReleaseAgeExclude=react-resizable-panels
+rm -f pnpm-workspace.yaml     # pnpm이 만든 미완성 플레이스홀더. 커밋하지 말 것.
+
+# 2) 번들 — 스킬 스크립트와 동일한 파이프라인(Parcel → html-inline)을 node로 직접 호출
+rm -rf dist bundle.html .parcel-cache
+node ./node_modules/parcel/lib/bin.js build index.html --dist-dir dist --no-source-maps
+node ./node_modules/html-inline/bin/cmd.js dist/index.html > bundle.html
+
+# 3) 지도 키 주입 (키가 없으면 실패한다. 지도만 안 나오는 게 아니라 스크립트가 exit 1)
+GMAPS_API_KEY=AIza... GMAPS_MAP_ID=... node scripts/postbundle.mjs bundle.html
+
+# 4) 검증 — node verify.mjs 는 컨테이너 전용이다. 로컬은 5번 절의 브라우저 스니펫을 쓸 것.
+
+# 5) 산출물 배치 — 평소에는 필요 없다. CI가 만들어 배포한다.
+#    로컬 산출물이 따로 필요할 때만:
+cp bundle.html ../deliverable/나하호텔_29곳_2인.html
 ```
 
-`web-artifacts-builder` 스킬이 없는 세션이면 `parcel build index.html --no-source-maps` +
-`html-inline`으로 같은 결과를 만들 수 있다.
+결과물 크기는 **약 306,000 bytes**다. Leaflet(+그 CSS와 인라인 PNG)이 빠지면서
+Google Maps 전환 이전의 467,000 bytes에서 크게 줄었다.
+지도 스크립트는 런타임에 구글 CDN에서 받아오므로 번들에 들어가지 않는다.
 
-#### 2026-08-17 재빌드에서 걸린 것들 (pnpm 11 환경)
+**예전에 있던 "Leaflet CSS의 url(*.png)을 data URI로 치환" 단계는 이제 없다.**
+Leaflet을 import하지 않으므로 `dist/`에 PNG 자체가 생기지 않는다.
 
+#### 2026-08-17 재빌드에서 걸린 것들 (윈도우 + pnpm 11 환경)
+
+- **이 윈도우 머신에는 `node`·`npm`이 PATH에 없다.** pnpm은 자체 실행 파일이라 그냥 돌지만,
+  parcel·html-inline을 부르려면 node가 필요하다. Playwright가 번들해 둔 것을 쓰면 된다:
+  `C:\Users\<user>\AppData\Local\ms-playwright-go\1.50.1\node.exe` (v22.13.1).
+  이 디렉터리를 PATH 앞에 붙이는 것으로 충분하고, 시스템에 node를 새로 설치할 필요는 없었다.
+- **`pnpm install`이 `pnpm-workspace.yaml`을 새로 만든다.** 내용이
+  `allowBuilds: {'@parcel/watcher': set this to true or false, ...}`라는 **미완성 플레이스홀더**라
+  그대로 커밋하면 안 된다. 빌드에 필요 없으니 지우면 된다(`rm src-react/pnpm-workspace.yaml`).
 - **pnpm 11의 공급망 정책이 이 락파일을 막는다.** `minimumReleaseAge`(기본 ~24시간) 때문에
   `@hookform/resolvers` · `electron-to-chromium` · `react-resizable-panels`이
   `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`으로 거부된다 — 락파일을 만든 날 배포된 버전들이라서다.
@@ -73,15 +164,13 @@ cp bundle.html deliverable/나하호텔_29곳_2인.html && cp bundle.html ../../
   ```
 - `pnpm install`이 `ERR_PNPM_IGNORED_BUILDS`(@parcel/watcher, @swc/core, lmdb, msgpackr-extract)를
   띄우지만 **`parcel build`에는 영향 없다.** `pnpm approve-builds`를 돌릴 필요 없다.
-- **html-inline은 CSS의 `url()`을 인라인하지 않는다.** Leaflet CSS가 참조하는
-  `layers.png` · `layers-2x.png` · `marker-icon.png`가 상대경로로 남아 단일 파일에서 깨진다.
-  (번호 divIcon만 쓰므로 화면에는 안 보이지만) 번들 후 data URI로 치환해 두었다:
-  ```bash
-  node -e 'const fs=require("fs");let h=fs.readFileSync("bundle.html","utf8");
-  for(const f of fs.readdirSync("dist").filter(f=>f.endsWith(".png")))
-    h=h.split("url("+f+")").join("url(data:image/png;base64,"+fs.readFileSync("dist/"+f).toString("base64")+")");
-  fs.writeFileSync("bundle.html",h)'
-  ```
+- ~~html-inline은 CSS의 `url()`을 인라인하지 않는다~~ — Leaflet CSS가 참조하던 PNG 3개 문제였다.
+  **Google Maps로 갈아타면서 사라졌다.** 지금은 `dist/`에 PNG가 생기지 않는다.
+- **2026-08-17 현재 이 머신에 pnpm이 없다.** (예전 세션에는 있었다.) `node_modules/`는 이미 깔려 있어
+  빌드는 위 node 직접 호출로 돌지만, **의존성을 추가·제거할 수 없다.** 그래서:
+  - Google Maps 타입은 `@types/google.maps`를 넣는 대신 `src/types/gmaps.d.ts`에 쓰는 것만 직접 선언했다.
+  - **`leaflet` · `@types/leaflet`이 package.json에 남아 있다.** 아무 데서도 import하지 않으므로
+    번들에는 안 들어가고 동작에도 영향이 없다. 다음에 pnpm이 있는 환경에서 락파일을 다시 만들 때 빼면 된다.
 
 ---
 
@@ -159,6 +248,23 @@ Claude-in-Chrome MCP(브라우저 도구)로 수행했다. 삽질한 것들을 �
   `verify.mjs`의 `/opt/pw-browsers/chromium` 경로는 그 컨테이너 전용이라 로컬에서는 안 맞는다.)
 - 확인 항목: 행 29개 / 핀 29개 / 핀 번호 `1..29` / 필터 시 재번호 / 콘솔 에러 0.
 
+### Playwright 없이 브라우저로만 확인하기
+
+`verify.mjs`를 못 돌리는 환경(로컬 윈도우 등)에서는 파일을 열고 콘솔에 아래를 넣으면 같은 항목을 볼 수 있다.
+
+```js
+({ rows: document.querySelectorAll('table.sc tbody tr').length,          // 29
+   pins: [...document.querySelectorAll('.pinwrap .pin')].map(e=>e.textContent).join(','), // 1..29
+   landmarks: document.querySelectorAll('.lmk-dia').length,              // 2
+   tiles: document.querySelectorAll('.leaflet-tile-loaded').length,      // >0 이면 실타일 로드
+   ext: document.querySelectorAll('script[src], link[rel=stylesheet]').length }) // 0 = 단일 파일
+```
+
+- **React 상태는 비동기다.** 필터 버튼을 `.click()`한 직후 같은 스크립트에서 DOM을 읽으면
+  **이전 렌더 값이 나온다.** 클릭과 검사를 별도 호출로 나눠야 한다. (이걸로 한 번 헛다리를 짚었다.)
+- 2026-08-17 실측: 필터 `온천·대욕장` → 5곳/핀 1..5, `전체` → 29곳, 정렬 7종·카드 펼침·다크 모드 정상,
+  콘솔 에러 0, 외부 참조 0.
+
 ---
 
 ## 6. UI 구조와 사용자가 요청했던 제약들 (되돌리지 말 것)
@@ -186,10 +292,11 @@ Claude-in-Chrome MCP(브라우저 도구)로 수행했다. 삽질한 것들을 �
 
 ### 미해결 요청
 
-- **아티팩트 갤러리 저장**: 사용자가 여러 번 요청했으나 이 세션에서는 불가능했다.
+- **아티팩트 갤러리 저장**: 사용자가 여러 번 요청했으나 그 세션에서는 불가능했다.
   `mcp__remote-devices__create_artifact`는 **Claude 데스크톱 앱에서 시작한 세션**에서만 붙는다
   (브리지가 세션 시작 시점에 바인딩됨). 데스크톱 앱에서 새 세션을 열고
   `deliverable/나하호텔_29곳_2인.html`을 올린 뒤 SendUserFile → create_artifact 하면 된다.
+  단, **공유 목적이라면 이제 https://namhyun-gu.github.io/workspace/ 가 있으니 갤러리가 필수는 아니다.**
 
 ---
 
@@ -215,9 +322,16 @@ Claude-in-Chrome MCP(브라우저 도구)로 수행했다. 삽질한 것들을 �
 ## 8. 다음 세션에 그대로 붙여 쓸 수 있는 프롬프트
 
 ```
-첨부한 zip은 오키나와 나하 호텔 비교 프로젝트다. HANDOFF.md를 먼저 읽어라.
+docs/naha_hotel/ 은 오키나와 나하 호텔 비교 프로젝트다. HANDOFF.md를 먼저 읽어라.
 2027-01-19~22, 3박, 성인 2명, 객실 1개 조건이고 국제거리·제1마키시 공설시장
-접근성이 가장 중요한 기준이다. data/hotels.json이 원본 데이터,
-deliverable/나하호텔_29곳_2인.html이 현재 최종본, src-react/가 그 소스다.
+접근성이 가장 중요한 기준이다.
+
+data/hotels.json이 원본 데이터, src-react/가 소스,
+deliverable/나하호텔_29곳_2인.html이 현재 최종본이고
+같은 파일이 docs/index.html로 복사돼 GitHub Pages(main /docs)에서
+https://namhyun-gu.github.io/workspace/ 로 서비스된다.
+
+UI를 고치면 src-react/를 고친 뒤 HANDOFF.md "2. 산출물"의 재빌드 절차대로 번들해서
+deliverable/ 과 docs/index.html 두 곳에 복사하고, main에 푸시해야 사이트가 갱신된다.
 HANDOFF.md의 "되돌리지 말 것" 목록을 지켜라.
 ```

@@ -1,0 +1,89 @@
+name: Deploy GitHub Pages
+
+# docs/ 를 그대로 서빙하던 "Deploy from a branch" 대신, 여기서 빌드해 배포한다.
+# 전환하려면 저장소 Settings → Pages → Source 를 "GitHub Actions" 로 바꿔야 한다.
+#
+# 필요한 값 (Settings → Secrets and variables → Actions):
+#   secret  GMAPS_API_KEY  — Google Maps JavaScript API 키 (리퍼러 제한 필수)
+#   var     GMAPS_MAP_ID   — Cloud Console에서 만든 Map ID (없으면 DEMO_MAP_ID로 대체)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docs/naha_hotel/src-react
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: docs/naha_hotel/src-react/pnpm-lock.yaml
+
+      # minimumReleaseAgeExclude 3개는 락파일 생성 당일 배포된 버전 때문이다.
+      # 시간이 지나면 없어도 통과하지만, 남겨 둬도 무해하다.
+      - name: 의존성 설치
+        run: |
+          pnpm install --frozen-lockfile \
+            --config.minimumReleaseAgeExclude=@hookform/resolvers \
+            --config.minimumReleaseAgeExclude=electron-to-chromium \
+            --config.minimumReleaseAgeExclude=react-resizable-panels
+          rm -f pnpm-workspace.yaml
+
+      # pnpm exec 는 실행 전에 install 을 다시 돌려 정책 검사에 또 걸린다. node 로 직접 부른다.
+      - name: 단일 HTML 번들
+        run: |
+          rm -rf dist bundle.html .parcel-cache
+          node ./node_modules/parcel/lib/bin.js build index.html --dist-dir dist --no-source-maps
+          node ./node_modules/html-inline/bin/cmd.js dist/index.html > bundle.html
+
+      - name: 지도 키 주입
+        env:
+          GMAPS_API_KEY: ${{ secrets.GMAPS_API_KEY }}
+          GMAPS_MAP_ID: ${{ vars.GMAPS_MAP_ID }}
+        run: node scripts/postbundle.mjs bundle.html
+
+      - name: 사이트 구성
+        working-directory: .
+        run: |
+          rm -rf _site && mkdir -p _site
+          # src-react/ 는 소스라 배포하지 않는다 (CI에서 node_modules가 생겨 있어 더욱).
+          rsync -a --exclude 'naha_hotel/src-react' docs/ _site/
+          cp docs/naha_hotel/src-react/bundle.html _site/index.html
+          mkdir -p _site/naha_hotel/deliverable
+          cp docs/naha_hotel/src-react/bundle.html '_site/naha_hotel/deliverable/나하호텔_29곳_2인.html'
+          find _site -maxdepth 2
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
