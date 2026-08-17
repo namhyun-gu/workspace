@@ -1,0 +1,157 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+    /* 프로젝트 토큰 (따뜻한 뉴트럴) */
+    --surface-0: #f5f4f1;
+    --surface-1: #fcfcfb;
+    --surface-2: #eeede9;
+    --surface-3: #e4e2dc;
+    --line: #dedcd6;
+    --line-soft: #e9e7e2;
+    --ink-1: #0b0b0b;
+    --ink-2: #52514e;
+    --ink-3: #7d7b75;
+    --s1: #2a78d6;
+    --s2: #eb6834;
+    --s3: #1baf7a;
+    --good: #1a7f4f;
+    --warn: #a86a00;
+    --bad: #c0392b;
+    --link: #184f95;
+    --bar: #c9c7c0;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 4px 14px rgb(0 0 0 / 0.05);
+
+    /* shadcn 매핑 */
+    --background: 48 14% 95%;
+    --foreground: 0 0% 4%;
+    --card: 60 20% 99%;
+    --card-foreground: 0 0% 4%;
+    --popover: 60 20% 99%;
+    --popover-foreground: 0 0% 4%;
+    --primary: 213 72% 34%;
+    --primary-foreground: 48 14% 97%;
+    --secondary: 48 12% 92%;
+    --secondary-foreground: 0 0% 12%;
+    --muted: 48 12% 92%;
+    --muted-foreground: 45 4% 47%;
+    --accent: 48 12% 92%;
+    --accent-foreground: 0 0% 12%;
+    --destructive: 6 63% 46%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 45 12% 85%;
+    --input: 45 12% 85%;
+    --ring: 213 72% 34%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    color-scheme: dark;
+    --surface-0: #131312;
+    --surface-1: #1c1c1a;
+    --surface-2: #252523;
+    --surface-3: #302f2c;
+    --line: #3a3a37;
+    --line-soft: #2c2c2a;
+    --ink-1: #ffffff;
+    --ink-2: #c3c2b7;
+    --ink-3: #96958c;
+    --s1: #3987e5;
+    --s2: #d95926;
+    --s3: #199e70;
+    --good: #4bbd84;
+    --warn: #d9a13a;
+    --bad: #e66767;
+    --link: #86b6ef;
+    --bar: #4a4945;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 14px rgb(0 0 0 / 0.3);
+
+    --background: 60 3% 7%;
+    --foreground: 0 0% 100%;
+    --card: 60 4% 11%;
+    --card-foreground: 0 0% 100%;
+    --popover: 60 4% 11%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 212 74% 73%;
+    --primary-foreground: 60 3% 7%;
+    --secondary: 60 4% 14%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 60 4% 14%;
+    --muted-foreground: 52 5% 57%;
+    --accent: 60 4% 14%;
+    --accent-foreground: 0 0% 100%;
+    --border: 60 4% 22%;
+    --input: 60 4% 22%;
+    --ring: 212 74% 73%;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--surface-0);
+    color: var(--ink-1);
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+      Pretendard, "Noto Sans KR", "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+  b, strong { font-weight: 700; }
+}
+
+@layer components {
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* ===== 한눈에 보기: 가로 스크롤 + 호텔명 고정 ===== */
+  .scanscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+  table.sc { border-collapse: separate; border-spacing: 0; font-size: 13px; min-width: 820px; width: 100%; }
+  table.sc th { font-weight: 600; font-size: 11.5px; color: var(--ink-3); text-align: right; padding: 9px 10px; background: var(--surface-2); white-space: nowrap; }
+  table.sc td { padding: 9px 10px; text-align: right; border-bottom: 1px solid var(--line-soft); white-space: nowrap; }
+  table.sc tbody tr { cursor: pointer; }
+  table.sc tbody tr:hover td { background: var(--surface-2); }
+  table.sc th.nm, table.sc td.nm {
+    position: sticky; left: 0; z-index: 2; text-align: left;
+    padding-left: 12px; padding-right: 12px; min-width: 152px;
+    background: var(--surface-1); box-shadow: 1px 0 0 var(--line-soft);
+  }
+  table.sc thead th.nm { background: var(--surface-2); z-index: 3; box-shadow: 1px 0 0 var(--line); }
+  table.sc tbody tr:hover td.nm { background: var(--surface-2); }
+  .areabar { display: block; height: 3px; border-radius: 2px; background: var(--line-soft); margin-top: 5px; overflow: hidden; }
+  .areabar i { display: block; height: 100%; background: var(--bar); }
+
+  /* ===== 지도 ===== */
+  #lmap { width: 100%; height: 275px; border-radius: 11px; overflow: hidden; background: var(--surface-2); z-index: 0; }
+  .leaflet-container { font: inherit; background: var(--surface-2); }
+  .dark .leaflet-tile-pane { filter: brightness(0.72) contrast(1.06) saturate(0.85); }
+  .pinwrap { background: none; border: none; }
+  .pinwrap .pin {
+    width: 26px; height: 26px; border-radius: 9999px; display: flex; align-items: center; justify-content: center;
+    font-size: 12.5px; font-weight: 800; color: #fff; border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.4); font-variant-numeric: tabular-nums; line-height: 1; cursor: pointer;
+  }
+  .pinwrap .pin.g1 { background: var(--s1); }
+  .pinwrap .pin.g2 { background: var(--s2); }
+  .pinwrap .pin.g3 { background: var(--s3); }
+  .dark .pinwrap .pin { border-color: rgb(255 255 255 / 0.92); }
+  .lmk-dia { width: 11px; height: 11px; background: #111; transform: rotate(45deg); border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.2); }
+  .leaflet-tooltip.mklab { background: rgb(20 20 20 / 0.88); border: none; box-shadow: none; color: #fff; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 6px; }
+  .leaflet-tooltip.mklab::before { display: none; }
+  .leaflet-popup-content { margin: 11px 13px; font-size: 13px; line-height: 1.5; color: #111; }
+  .leaflet-popup-content b { font-size: 14px; display: block; margin-bottom: 3px; }
+  @media (max-width: 430px) {
+    .pinwrap .pin { width: 23px; height: 23px; font-size: 11.5px; border-width: 1.6px; }
+  }
+  @media (min-width: 760px) {
+    #lmap { height: 440px; }
+    table.sc { font-size: 13.5px; min-width: 0; }
+  }
+}
