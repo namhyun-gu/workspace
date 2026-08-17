@@ -119,7 +119,8 @@ export default function HotelMap({ rows, onPick, dark }: Props) {
           gmpClickable: true,
         });
         const self = mk;
-        mk.addListener("click", () => {
+        /* AdvancedMarkerElement는 커스텀 엘리먼트라 'click'이 아니라 'gmp-click'을 쓴다 */
+        mk.addEventListener("gmp-click", () => {
           info.current?.setContent(popupHTML(h));
           if (map.current) info.current?.open({ map: map.current, anchor: self });
           pickRef.current(h);

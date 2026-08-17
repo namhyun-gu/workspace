@@ -91,6 +91,8 @@ declare global {
         zIndex: number | null;
         gmpClickable: boolean;
         addListener(name: string, handler: () => void): MapsEventListener;
+        /** 커스텀 엘리먼트라 DOM 이벤트도 받는다. 클릭은 'gmp-click'. */
+        addEventListener(name: string, handler: (ev: Event) => void): void;
       }
     }
   }

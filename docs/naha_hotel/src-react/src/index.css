@@ -170,3 +170,9 @@
    따라서 InfoWindow 오버라이드는 @layer 바깥에 둬야 한다. */
 .gm-style-iw-d { font: inherit; font-size: 13px; line-height: 1.5; }
 .gm-style-iw-d b { font-size: 14px; display: block; margin-bottom: 3px; }
+
+/* colorScheme=DARK 에서도 InfoWindow 말풍선 배경은 흰색으로 두면서 전경색만
+   다크 테마를 따라간다. 글자색은 페이지에서 상속까지 받아 흰 배경에 흰 글자가 된다.
+   말풍선은 항상 밝으므로 전경색을 어둡게 고정한다. (Leaflet 시절 color:#111 과 같은 역할) */
+.gm-style-iw-d, .gm-style-iw-d * { color: #111; }
+.gm-style-iw button.gm-ui-hover-effect > span { background-color: #5f6368 !important; }
