@@ -58,6 +58,16 @@
    CI가 매번 새로 만들어 배포하므로 저장소에 둘 이유가 없다.
    **1번보다 먼저 지우면 사이트가 404가 된다.**
 
+**2026-08-17 진행 상황**: 1·2번의 Secret(`GMAPS_API_KEY`)과 Pages 소스 전환은 완료됐고
+배포가 실제로 성공했다(https://namhyun-gu.github.io/workspace/ · 306KB · Leaflet 없음).
+브라우저에서 타일·한국어 라벨·다크 모드·29개 핀·랜드마크·InfoWindow까지 육안 확인했다.
+
+**남은 것 둘:**
+- **`GMAPS_MAP_ID` 변수가 아직 없어 `DEMO_MAP_ID`로 돌고 있다.** 지금은 정상 렌더되지만
+  이름 그대로 개발용이라 언제 제한이 걸려도 이상하지 않다. Cloud Console에서 Map ID를 만들어
+  Variable로 넣을 것. 넣으면 클라우드 기반 지도 스타일링도 쓸 수 있다.
+- 위 3번(커밋된 빌드 산출물 삭제)
+
 파이프라인: `pnpm install` → Parcel 번들 → html-inline → `scripts/postbundle.mjs`로 키 주입 →
 `docs/`를 `_site/`로 복사(`src-react/` 제외)하고 `index.html`을 갓 만든 번들로 덮어씀 → `actions/deploy-pages`.
 
