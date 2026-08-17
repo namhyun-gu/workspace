@@ -14,7 +14,7 @@ function Metric({ l, v, color }: { l: string; v: React.ReactNode; color?: string
   return (
     <div className="bg-surface-1 px-1.5 py-2 text-center">
       <span className="block text-[10.5px] text-ink-3">{l}</span>
-      <span className="num mt-0.5 block text-[14.5px] font-bold leading-tight" style={color ? { color } : undefined}>
+      <span className="num mt-0.5 block text-[15px] font-bold leading-tight" style={color ? { color } : undefined}>
         {v}
       </span>
     </div>
@@ -34,13 +34,16 @@ export default function HotelCard({ h, rank, id }: { h: Hotel; rank: number; id:
           {rank}
         </span>
         <div className="min-w-0 flex-1">
-          <h4 className="m-0 text-[16px] leading-tight tracking-[-0.015em]">
+          <h4 className="m-0 text-[16px] font-bold leading-tight tracking-[-0.02em]">
             {h.name}
           </h4>
-          <span className="mt-0.5 block text-[11px] text-ink-3">{h.en}</span>
+          {/* 한글 표기와 영문 표기가 같은 곳이 있다. 같으면 한 번만 보여준다. */}
+          {h.en.toLowerCase() !== h.name.toLowerCase() && (
+            <span className="mt-0.5 block text-[11px] text-ink-3">{h.en}</span>
+          )}
         </div>
         <div className="flex-none text-right">
-          <b className="num block text-[16.5px] leading-tight">{won(h.price)}</b>
+          <b className="num block text-[17px] leading-tight tracking-[-0.02em]">{won(h.price)}</b>
           <span className="num text-[11px] text-ink-3">3박 {won(h.price * 3)}</span>
         </div>
       </div>
@@ -48,8 +51,8 @@ export default function HotelCard({ h, rank, id }: { h: Hotel; rank: number; id:
       <div className="mt-3 grid grid-cols-4 gap-px overflow-hidden rounded-[10px] border border-hair-soft bg-hair-soft">
         <Metric l="넓이" v={noArea(h) ? <span className="text-[12.5px] font-normal text-ink-3">미표기</span> : areaCell(h)} />
         <Metric l="국제거리" v={walkTxt(h)} color={GC[grp(h)]} />
-        <Metric l="마키시 시장" v={<>{h.market}<small className="text-[10.5px] font-normal text-ink-3">분</small></>} />
-        <Metric l="2인 객실" v={<>{h.avail}<small className="text-[10.5px] font-normal text-ink-3">종</small></>} />
+        <Metric l="마키시 시장" v={<>{h.market}<span className="u">분</span></>} />
+        <Metric l="2인 객실" v={<>{h.avail}<span className="u">종</span></>} />
       </div>
 
       <div className="mt-2.5 flex flex-wrap items-center gap-2.5">
@@ -76,7 +79,8 @@ export default function HotelCard({ h, rank, id }: { h: Hotel; rank: number; id:
 
       <button
         onClick={() => setOpen((v) => !v)}
-        className="mt-2 flex min-h-[38px] w-full items-center gap-1.5 border-t border-hair-soft pt-2 text-left text-[13px] font-medium text-link"
+        aria-expanded={open}
+        className="mt-2 flex min-h-[44px] w-full items-center gap-1.5 border-t border-hair-soft pt-2 text-left text-[13.5px] font-medium text-link"
       >
         2인 객실 {h.avail}종 · 시설 보기 <span className="text-[10px]">{open ? "▴" : "▾"}</span>
       </button>

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SCREENED, type Hotel } from "@/data/hotels";
 import {
-  ALL, FILTERS, PICKS, SORTS, areaCell, gmapDir, gmapSearch, walkTxt, won,
+  ALL, FILTERS, GC, PICKS, SORTS, areaCell, gmapDir, gmapSearch, grp, walkTxt, won,
   type FilterKey, view,
 } from "@/lib/hotel";
 import ScanTable from "@/components/ScanTable";
@@ -24,11 +24,25 @@ export default function App() {
   const [sortKey, setSortKey] = useState("price-asc");
   const [sel, setSel] = useState<Hotel | null>(null);
   const [showOut, setShowOut] = useState(false);
+  const [showTop, setShowTop] = useState(false);
   const bar = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
+
+  /* 맨 위로 버튼은 "위로 스크롤할 때"만 띄운다. 고정 버튼이 카드의 금액을
+     계속 가리는 걸 막으면서, 되돌아가려는 순간에는 바로 손에 잡힌다. */
+  useEffect(() => {
+    let last = window.scrollY;
+    const sync = () => {
+      const y = window.scrollY;
+      if (Math.abs(y - last) > 4) setShowTop(y > 700 && y < last);
+      last = y;
+    };
+    window.addEventListener("scroll", sync, { passive: true });
+    return () => window.removeEventListener("scroll", sync);
+  }, []);
 
   useEffect(() => {
     const sync = () => {
@@ -52,6 +66,12 @@ export default function App() {
 
   const cheapest = ALL.reduce((a, b) => (a.price < b.price ? a : b));
   const widest = ALL.reduce((a, b) => (a.area[1] > b.area[1] ? a : b));
+  /* 도보 3구간(3분 이내 / 4~8분 / 9분 이상) 분포 */
+  const dist = useMemo(() => {
+    const d = [0, 0, 0];
+    ALL.forEach((h) => d[grp(h)]++);
+    return d;
+  }, []);
 
   return (
     <>
@@ -60,47 +80,83 @@ export default function App() {
         className="sticky top-0 z-40 border-b border-hair bg-surface-0/90 px-4 py-2.5 backdrop-blur-md"
         style={{ paddingTop: "calc(9px + env(safe-area-inset-top))" }}
       >
-        <div className="mx-auto flex max-w-[1180px] items-baseline gap-2">
-          <h1 className="m-0 flex-1 truncate text-[16.5px] font-bold tracking-[-0.02em]">
+        <div className="mx-auto flex max-w-[1180px] items-center gap-2">
+          <h1 className="m-0 flex-1 truncate text-[16.5px] font-bold tracking-[-0.025em]">
             나하 호텔 29곳 · 2인 실측
           </h1>
-          <span className="num flex-none text-[12.5px] text-ink-3">1/19–22 · 3박</span>
+          <span className="num hidden flex-none text-[12.5px] text-ink-3 sm:inline">1/19–22 · 3박</span>
+          <button
+            onClick={() => setDark((v) => !v)}
+            aria-label={dark ? "라이트 모드로 전환" : "다크 모드로 전환"}
+            className="-mr-1 flex h-9 w-9 flex-none items-center justify-center rounded-full text-ink-2"
+          >
+            {dark ? (
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="4.2" />
+                <path d="M12 2.6v2M12 19.4v2M2.6 12h2M19.4 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M18.7 5.3l-1.4 1.4M6.7 17.3l-1.4 1.4" />
+              </svg>
+            ) : (
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+                <path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a8.6 8.6 0 1 0 11.1 11.1Z" />
+              </svg>
+            )}
+          </button>
         </div>
       </div>
 
       <div className="mx-auto max-w-[1180px] px-4 pb-9">
         <section className="pt-5">
-          <div className="text-[12px] font-bold uppercase tracking-[0.07em] text-s2">아고다 상세페이지 실측</div>
-          <h2 className="mb-1.5 mt-1 text-[24px] font-bold leading-tight tracking-[-0.03em] md:text-[28px]">
-            후보 81곳을 훑어 29곳만 남겼습니다
+          <div className="lbl text-s1">아고다 상세페이지 실측</div>
+          <h2 className="mb-2 mt-1.5 text-[26px] font-extrabold leading-[1.15] tracking-[-0.035em] md:text-[32px]">
+            후보 81곳을 훑어
+            <br />
+            29곳만 남겼습니다
           </h2>
-          <p className="m-0 text-[14px] text-ink-2">
-            아고다 나하 검색 1페이지 81곳을 전부 확인하고, 2인이 실제로 잡을 수 있는 객실이 있고 국제거리·제1마키시 공설시장
-            접근성이 되는 29곳만 상세페이지까지 들어가 실측했습니다. 트리플·쿼드·패밀리룸은 제외했습니다.
+          <p className="m-0 max-w-[52ch] text-[14.5px] leading-relaxed text-ink-2">
+            2인이 실제로 잡을 수 있는 객실이 있고, 국제거리·제1마키시 공설시장에서 걸어갈 수 있는 곳만 상세페이지까지 들어가
+            직접 재었습니다. 트리플·쿼드·패밀리룸은 제외했습니다.
           </p>
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {["2027. 1. 19(화) → 1. 22(금) · 3박", "성인 2명 · 객실 1개", "세금·수수료 포함", "조회 2026. 8. 17"].map((t) => (
-              <span key={t} className="rounded-full border border-hair bg-surface-1 px-2.5 py-1 text-[11.5px] text-ink-2">
-                {t}
-              </span>
-            ))}
+
+          {/* 이 문서의 논지: 29곳이 3분 선을 기준으로 어떻게 갈리는가 */}
+          <div className="mt-5 rounded-[14px] border border-hair bg-surface-1 p-3.5 shadow-[var(--shadow)]">
+            <div className="lbl">국제거리 도보 분포</div>
+            <p className="m-0 mt-1.5 text-[15px] leading-snug">
+              29곳 중 <b className="num text-[19px] text-s1">{dist[0]}곳</b>이 국제거리 <b>3분</b> 안에 있습니다.
+            </p>
+            <div className="mt-3 flex h-2 gap-0.5 overflow-hidden rounded-full">
+              {dist.map((n, i) => (
+                <i key={i} style={{ flex: n, background: GC[i] }} className="block" />
+              ))}
+            </div>
+            <div className="mt-2 flex flex-wrap gap-x-3.5 gap-y-1 text-[11.5px] text-ink-2">
+              {["3분 이내", "4~8분", "9분 이상"].map((t, i) => (
+                <span key={t} className="inline-flex items-center gap-1.5">
+                  <i className="inline-block h-2 w-2 flex-none rounded-full" style={{ background: GC[i] }} />
+                  {t}
+                  <b className="num text-ink-1">{dist[i]}</b>
+                  <span className="u">곳</span>
+                </span>
+              ))}
+            </div>
           </div>
-          <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-4">
+
+          <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-[12.5px] sm:grid-cols-4">
             {[
-              ["훑어본 후보", "81곳"],
-              ["상세 실측", "29곳"],
+              ["일정", "1/19(화)→1/22(금) · 3박"],
+              ["인원", "성인 2명 · 객실 1개"],
               ["최저 1박", won(cheapest.price)],
               ["최대 넓이", widest.area[1] + "㎡"],
             ].map(([l, v]) => (
-              <div key={l} className="rounded-[12px] border border-hair bg-surface-1 px-3 py-2 shadow-[var(--shadow)]">
-                <div className="text-[11px] text-ink-3">{l}</div>
-                <div className="num text-[18px] font-bold leading-tight">{v}</div>
+              <div key={l} className="border-t border-hair-soft pt-1.5">
+                <dt className="text-[11px] text-ink-3">{l}</dt>
+                <dd className="num m-0 font-semibold">{v}</dd>
               </div>
             ))}
-          </div>
+          </dl>
+          <p className="mt-2.5 text-[11.5px] text-ink-3">세금·수수료 포함 · 아고다 조회 2026. 8. 17</p>
         </section>
 
-        <Sec t="한눈에 보기" s="아래 필터·정렬이 그대로 적용됩니다. 호텔명은 고정돼 있고, 표를 좌우로 밀면 나머지 항목이 나옵니다. 줄을 누르면 상세로 이동합니다. ◆는 아고다가 상세페이지에 직접 표기한 거리입니다." />
+        <Sec t="한눈에 보기" s="아래 필터·정렬이 그대로 적용됩니다. 줄을 누르면 상세로 이동합니다. 가로 자는 국제거리까지의 도보 시간이고, 세로 눈금이 3분 지점입니다." />
         <ScanTable rows={rows} onJump={jump} />
 
         <Sec t="지도" s="아고다 좌표 기준 실제 위치입니다. 핀 안의 숫자는 위 표의 순번과 같습니다. 지도는 Google Maps로 그립니다." />
@@ -172,13 +228,13 @@ export default function App() {
         <ValueChart rows={rows} />
 
         <Sec t="호텔별 상세" s="네 가지 지표(넓이·국제거리·시장·2인 객실)가 항상 같은 자리에 있습니다." />
-        <div className="-mx-4 mb-2 flex gap-1.5 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="chiprow -mx-4 mb-2 flex gap-1.5 px-4 pb-2">
           {FILTERS.map((f) => (
             <button
               key={f.k}
               onClick={() => setFilter(f.k)}
               aria-pressed={filter === f.k}
-              className={`min-h-[38px] flex-none whitespace-nowrap rounded-full border px-3.5 text-[13.5px] ${
+              className={`min-h-[40px] flex-none whitespace-nowrap rounded-full border px-3.5 text-[13.5px] ${
                 filter === f.k
                   ? "border-link bg-link font-semibold text-surface-0"
                   : "border-hair bg-surface-1 text-ink-2"
@@ -272,23 +328,15 @@ export default function App() {
         </footer>
       </div>
 
-      <div
-        className="fixed inset-x-0 bottom-0 z-50 flex gap-2 border-t border-hair bg-surface-0/90 px-4 py-2 backdrop-blur-md md:inset-x-auto md:bottom-6 md:right-6 md:w-auto md:rounded-full md:border md:p-1.5 md:shadow-[var(--shadow)]"
-        style={{ paddingBottom: "calc(8px + env(safe-area-inset-bottom))" }}
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        aria-label="맨 위로"
+        className={`totop${showTop ? " on" : ""}`}
       >
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="min-h-[44px] flex-1 rounded-xl border border-hair bg-surface-1 text-[14px] text-ink-2 md:min-w-[110px] md:rounded-full md:px-4"
-        >
-          맨 위로
-        </button>
-        <button
-          onClick={() => setDark((v) => !v)}
-          className="min-h-[44px] flex-1 rounded-xl border border-hair bg-surface-1 text-[14px] text-ink-2 md:min-w-[110px] md:rounded-full md:px-4"
-        >
-          {dark ? "라이트 모드" : "다크 모드"}
-        </button>
-      </div>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M12 19V5M5.5 11.5 12 5l6.5 6.5" />
+        </svg>
+      </button>
     </>
   );
 }

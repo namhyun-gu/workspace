@@ -13,6 +13,8 @@ export const areaCell = (h: Hotel) =>
 export const areaTop = Math.max(...ALL.map((h) => h.area[1]));
 export const revTxt = (h: Hotel) => (h.rev ? h.rev.toLocaleString() + "건" : "후기 수 미표기");
 export const locTxt = (h: Hotel) => (h.loc ? h.loc.toFixed(1) : "—");
+/** 국제거리 도보 0~10분을 자 위의 0~100% 위치로. 3분 임계선이 30% 지점에 온다. */
+export const walkPct = (h: Hotel) => Math.min(100, Math.max(0, (h.kokusai / 10) * 100));
 export const gmapSearch = (h: Hotel) =>
   `https://www.google.com/maps/search/?api=1&query=${h.lat},${h.lng}`;
 export const gmapDir = (h: Hotel) =>

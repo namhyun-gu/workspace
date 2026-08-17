@@ -5,87 +5,90 @@
 @layer base {
   :root {
     color-scheme: light;
-    /* 프로젝트 토큰 (따뜻한 뉴트럴) */
-    --surface-0: #f5f4f1;
-    --surface-1: #fcfcfb;
-    --surface-2: #eeede9;
-    --surface-3: #e4e2dc;
-    --line: #dedcd6;
-    --line-soft: #e9e7e2;
-    --ink-1: #0b0b0b;
-    --ink-2: #52514e;
-    --ink-3: #7d7b75;
-    --s1: #2a78d6;
-    --s2: #eb6834;
-    --s3: #1baf7a;
-    --good: #1a7f4f;
-    --warn: #a86a00;
-    --bad: #c0392b;
-    --link: #184f95;
-    --bar: #c9c7c0;
-    --shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 4px 14px rgb(0 0 0 / 0.05);
+    /* ── 팔레트 ────────────────────────────────────────────────
+       류큐 빙가타(紅型)의 주홍·호박·쪽빛에서 가져왔다.
+       도보시간 3단계를 "가까울수록 뜨겁게" 순차 척도로 쓴다.
+       (예전 파랑→주황→초록은 가장 먼 구간이 초록으로 읽히는 문제가 있었다.) */
+    --surface-0: #edf0ef;
+    --surface-1: #ffffff;
+    --surface-2: #e2e7e6;
+    --surface-3: #d2dad9;
+    --line: #cbd4d3;
+    --line-soft: #dfe5e4;
+    --ink-1: #0d1416;
+    --ink-2: #4b585b;
+    --ink-3: #6f7c7f;
+    --s1: #c7401f;
+    --s2: #92620a;
+    --s3: #3d6389;
+    --good: #14724a;
+    --warn: #92620a;
+    --bad: #b5301f;
+    --link: #1d5175;
+    --bar: #b7c2c1;
+    --shadow: 0 1px 2px rgb(13 20 22 / 0.05), 0 4px 14px rgb(13 20 22 / 0.05);
 
     /* shadcn 매핑 */
-    --background: 48 14% 95%;
-    --foreground: 0 0% 4%;
-    --card: 60 20% 99%;
-    --card-foreground: 0 0% 4%;
-    --popover: 60 20% 99%;
-    --popover-foreground: 0 0% 4%;
-    --primary: 213 72% 34%;
-    --primary-foreground: 48 14% 97%;
-    --secondary: 48 12% 92%;
-    --secondary-foreground: 0 0% 12%;
-    --muted: 48 12% 92%;
-    --muted-foreground: 45 4% 47%;
-    --accent: 48 12% 92%;
-    --accent-foreground: 0 0% 12%;
-    --destructive: 6 63% 46%;
+    --background: 165 8% 93%;
+    --foreground: 192 27% 7%;
+    --card: 0 0% 100%;
+    --card-foreground: 192 27% 7%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 192 27% 7%;
+    --primary: 202 60% 29%;
+    --primary-foreground: 165 8% 97%;
+    --secondary: 168 11% 90%;
+    --secondary-foreground: 192 27% 12%;
+    --muted: 168 11% 90%;
+    --muted-foreground: 190 6% 47%;
+    --accent: 168 11% 90%;
+    --accent-foreground: 192 27% 12%;
+    --destructive: 8 71% 42%;
     --destructive-foreground: 0 0% 98%;
-    --border: 45 12% 85%;
-    --input: 45 12% 85%;
-    --ring: 213 72% 34%;
+    --border: 174 12% 81%;
+    --input: 174 12% 81%;
+    --ring: 202 60% 29%;
     --radius: 0.75rem;
   }
 
   .dark {
     color-scheme: dark;
-    --surface-0: #131312;
-    --surface-1: #1c1c1a;
-    --surface-2: #252523;
-    --surface-3: #302f2c;
-    --line: #3a3a37;
-    --line-soft: #2c2c2a;
-    --ink-1: #ffffff;
-    --ink-2: #c3c2b7;
-    --ink-3: #96958c;
-    --s1: #3987e5;
-    --s2: #d95926;
-    --s3: #199e70;
-    --good: #4bbd84;
-    --warn: #d9a13a;
-    --bad: #e66767;
-    --link: #86b6ef;
-    --bar: #4a4945;
-    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 14px rgb(0 0 0 / 0.3);
+    --surface-0: #0e1315;
+    --surface-1: #161c1f;
+    --surface-2: #1e262a;
+    --surface-3: #2a343a;
+    --line: #2e393e;
+    --line-soft: #222b2f;
+    --ink-1: #f1f4f3;
+    --ink-2: #a7b3b7;
+    --ink-3: #78858a;
+    --s1: #f2603f;
+    --s2: #e0a030;
+    --s3: #6e93b8;
+    --good: #4fc08d;
+    --warn: #e0a030;
+    --bad: #f2705c;
+    --link: #8fc0e6;
+    --bar: #3c484d;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.34), 0 4px 14px rgb(0 0 0 / 0.34);
 
-    --background: 60 3% 7%;
-    --foreground: 0 0% 100%;
-    --card: 60 4% 11%;
-    --card-foreground: 0 0% 100%;
-    --popover: 60 4% 11%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 212 74% 73%;
-    --primary-foreground: 60 3% 7%;
-    --secondary: 60 4% 14%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 60 4% 14%;
-    --muted-foreground: 52 5% 57%;
-    --accent: 60 4% 14%;
-    --accent-foreground: 0 0% 100%;
-    --border: 60 4% 22%;
-    --input: 60 4% 22%;
-    --ring: 212 74% 73%;
+    --background: 195 20% 7%;
+    --foreground: 165 12% 95%;
+    --card: 197 16% 10%;
+    --card-foreground: 165 12% 95%;
+    --popover: 197 16% 10%;
+    --popover-foreground: 165 12% 95%;
+    --primary: 203 62% 73%;
+    --primary-foreground: 195 20% 7%;
+    --secondary: 197 16% 14%;
+    --secondary-foreground: 165 12% 95%;
+    --muted: 197 16% 14%;
+    --muted-foreground: 192 7% 51%;
+    --accent: 197 16% 14%;
+    --accent-foreground: 165 12% 95%;
+    --border: 197 15% 21%;
+    --input: 197 15% 21%;
+    --ring: 203 62% 73%;
   }
 
   * {
@@ -103,17 +106,88 @@
     font-size: 16px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
-    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
   }
   b, strong { font-weight: 700; }
+
+  /* 한국어는 어절 단위로 끊는다. 없으면 "남겼습니 / 다" 처럼 글자가 떨어진다. */
+  h1, h2, h3, h4, p, li, dd, dt, button, a, td, th, summary, figcaption {
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--link);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
 }
 
 @layer components {
   .num { font-variant-numeric: tabular-nums; }
 
-  /* ===== 한눈에 보기: 가로 스크롤 + 호텔명 고정 ===== */
+  /* 데이터 조판: 숫자는 무겁게, 단위는 작고 흐리게. 문서 전체에서 같은 규칙. */
+  .u { font-size: 0.76em; font-weight: 500; color: var(--ink-3); margin-left: 1px; }
+
+  /* 유틸리티 라벨: 아이브로우 · 열 이름 */
+  .lbl {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+    color: var(--ink-3); text-transform: uppercase;
+  }
+
+  /* ===== 시그니처: 3분 선 ==========================================
+     모든 행이 0–10분 도보 척도를 공유하고, 3분 지점의 세로선이
+     목록 전체를 관통한다. 훑어보기 = 선 왼쪽 점 찾기. */
+  .ruler {
+    position: relative; height: 11px; margin-top: 5px;
+    background-image: linear-gradient(var(--line), var(--line));
+    background-size: 100% 1px; background-position: 0 50%; background-repeat: no-repeat;
+  }
+  .ruler::before {                       /* 3분 임계선 */
+    content: ""; position: absolute; left: 30%; top: -4px; bottom: -4px;
+    width: 1px; background: var(--ink-3); opacity: 0.55;
+  }
+  .ruler i {                             /* 호텔 위치 */
+    position: absolute; top: 50%; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px;
+    border-radius: 9999px; border: 1.5px solid var(--surface-1);
+  }
+  .ruler.g1 i { background: var(--s1); }
+  .ruler.g2 i { background: var(--s2); }
+  .ruler.g3 i { background: var(--s3); }
+
+  /* 눈금 라벨 줄. 행과 같은 그리드를 써서 3분 위치가 정확히 맞는다. */
+  .rulerhead { position: relative; height: 13px; }
+  .rulerhead span {
+    position: absolute; top: 0; font-size: 9.5px; letter-spacing: 0.02em;
+    color: var(--ink-3); white-space: nowrap;
+  }
+
+  /* ===== 모바일 목록 행 ===== */
+  /* 머리글과 행이 같은 격자를 써야 3분 눈금이 세로로 정확히 맞는다.
+     3열은 auto가 아니라 고정폭이어야 한다 — auto는 격자마다 따로 계산돼 어긋난다. */
+  .scanrow, .scanhead {
+    display: grid; grid-template-columns: 22px minmax(0, 1fr) 92px;
+    column-gap: 10px; row-gap: 1px; align-items: baseline;
+    width: 100%; text-align: left; padding: 9px 12px 10px;
+  }
+  .scanhead { padding-top: 6px; padding-bottom: 2px; }
+  .scanrow { border-bottom: 1px solid var(--line-soft); }
+  .scanrow:last-child { border-bottom: 0; }
+  .scanrow:active { background: var(--surface-2); }
+  /* 자는 2열에만. 좌우 5px은 0분·10분 점이 트랙 밖으로 걸치지 않게 하는 여유다. */
+  .scanrow .ruler, .rulerhead { grid-column: 2; margin: 0 5px; }
+
+  /* ===== 한눈에 보기: 데스크톱 표 ===== */
   .scanscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
-  table.sc { border-collapse: separate; border-spacing: 0; font-size: 13px; min-width: 820px; width: 100%; }
+  table.sc { border-collapse: separate; border-spacing: 0; font-size: 13.5px; width: 100%; }
   table.sc th { font-weight: 600; font-size: 11.5px; color: var(--ink-3); text-align: right; padding: 9px 10px; background: var(--surface-2); white-space: nowrap; }
   table.sc td { padding: 9px 10px; text-align: right; border-bottom: 1px solid var(--line-soft); white-space: nowrap; }
   table.sc tbody tr { cursor: pointer; }
@@ -129,7 +203,7 @@
   .areabar i { display: block; height: 100%; background: var(--bar); }
 
   /* ===== 지도 ===== */
-  #lmap { width: 100%; height: 275px; border-radius: 11px; overflow: hidden; background: var(--surface-2); z-index: 0; }
+  #lmap { width: 100%; height: 300px; border-radius: 11px; overflow: hidden; background: var(--surface-2); z-index: 0; }
 
   /* AdvancedMarkerElement는 content의 하단 중앙을 좌표에 맞춘다. 절반 내려 중심을 맞춘다. */
   .pinwrap, .lmkwrap { position: relative; transform: translateY(50%); }
@@ -145,7 +219,7 @@
   .dark .pinwrap .pin { border-color: rgb(255 255 255 / 0.92); }
   .lmk-dia { width: 11px; height: 11px; background: #111; transform: rotate(45deg); border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.2); }
 
-  /* 호버 라벨 (예전 Leaflet tooltip 대체) */
+  /* 호버 라벨 */
   .pinwrap .pin::after, .lmkwrap::after {
     content: attr(data-label);
     position: absolute; left: 50%; bottom: calc(100% + 7px); transform: translateX(-50%);
@@ -157,12 +231,37 @@
     .pinwrap .pin:hover::after, .lmkwrap:hover::after { opacity: 1; }
   }
 
+  /* 가로 스크롤 그림자. local 그라디언트가 내용과 함께 움직이며 끝에서 그림자를
+     덮으므로, 더 밀 수 있을 때만 음영이 보인다. JS 없이 자기 보정된다. */
+  .chiprow {
+    overflow-x: auto; scrollbar-width: none;
+    background:
+      linear-gradient(to right, var(--surface-0) 40%, transparent) left / 36px 100% no-repeat local,
+      linear-gradient(to left, var(--surface-0) 40%, transparent) right / 36px 100% no-repeat local,
+      radial-gradient(farthest-side at 0 50%, rgb(0 0 0 / 0.16), transparent) left / 13px 100% no-repeat scroll,
+      radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / 0.16), transparent) right / 13px 100% no-repeat scroll;
+  }
+  .chiprow::-webkit-scrollbar { display: none; }
+
+  /* 맨 위로 — 위로 스크롤할 때만 나타나는 작은 버튼. 상시 바를 없애고 화면을 돌려준다. */
+  .totop {
+    position: fixed; right: 14px; z-index: 45;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    width: 42px; height: 42px; border-radius: 9999px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--line); background: var(--surface-1); color: var(--ink-2);
+    box-shadow: var(--shadow);
+    opacity: 0; transform: translateY(8px); pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  .totop.on { opacity: 1; transform: none; pointer-events: auto; }
+
   @media (max-width: 430px) {
     .pinwrap .pin { width: 23px; height: 23px; font-size: 11.5px; border-width: 1.6px; }
   }
-  @media (min-width: 760px) {
+  @media (min-width: 768px) {
     #lmap { height: 440px; }
-    table.sc { font-size: 13.5px; min-width: 0; }
+    table.sc { min-width: 780px; }
   }
 }
 
@@ -173,6 +272,6 @@
 
 /* colorScheme=DARK 에서도 InfoWindow 말풍선 배경은 흰색으로 두면서 전경색만
    다크 테마를 따라간다. 글자색은 페이지에서 상속까지 받아 흰 배경에 흰 글자가 된다.
-   말풍선은 항상 밝으므로 전경색을 어둡게 고정한다. (Leaflet 시절 color:#111 과 같은 역할) */
+   말풍선은 항상 밝으므로 전경색을 어둡게 고정한다. */
 .gm-style-iw-d, .gm-style-iw-d * { color: #111; }
 .gm-style-iw button.gm-ui-hover-effect > span { background-color: #5f6368 !important; }
