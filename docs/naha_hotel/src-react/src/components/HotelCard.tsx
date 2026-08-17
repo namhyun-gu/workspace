@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Hotel } from "@/data/hotels";
 import {
-  GC, areaCell, gmapDir, gmapSearch, grp, locTxt, noArea, revTxt, walkTxt, won,
+  GC, agodaUrl, areaCell, gmapDir, gmapSearch, grp, locTxt, noArea, revTxt, walkTxt, won,
 } from "@/lib/hotel";
 
 const pill: Record<string, string> = {
@@ -35,7 +35,23 @@ export default function HotelCard({ h, rank, id }: { h: Hotel; rank: number; id:
         </span>
         <div className="min-w-0 flex-1">
           <h4 className="m-0 text-[16px] font-bold leading-tight tracking-[-0.02em]">
-            {h.name}
+            {/* 호텔명을 누르면 이 문서의 조회 조건 그대로 아고다 상세페이지가 열린다 */}
+            <a
+              href={agodaUrl(h)}
+              target="_blank"
+              rel="noopener"
+              className="text-ink-1 no-underline hover:underline"
+            >
+              {h.name}
+              <svg
+                width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"
+                className="ml-1 inline-block -translate-y-px text-ink-3" aria-hidden="true"
+              >
+                <path d="M14 4h6v6M20 4l-8.5 8.5M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+              </svg>
+              <span className="sr-only">아고다에서 열기</span>
+            </a>
           </h4>
           {/* 한글 표기와 영문 표기가 같은 곳이 있다. 같으면 한 번만 보여준다. */}
           {h.en.toLowerCase() !== h.name.toLowerCase() && (
@@ -132,6 +148,14 @@ export default function HotelCard({ h, rank, id }: { h: Hotel; rank: number; id:
               </div>
             ))}
           </dl>
+          <a
+            className="mb-2 block rounded-[10px] border border-link bg-link py-2.5 text-center text-[13px] font-semibold text-surface-0 no-underline"
+            href={agodaUrl(h)}
+            target="_blank"
+            rel="noopener"
+          >
+            아고다에서 요금 보기
+          </a>
           <div className="flex gap-2">
             <a
               className="flex-1 rounded-[10px] border border-hair bg-surface-2 py-2 text-center text-[12.5px] font-semibold text-ink-1 no-underline"

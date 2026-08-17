@@ -273,5 +273,6 @@
 /* colorScheme=DARK 에서도 InfoWindow 말풍선 배경은 흰색으로 두면서 전경색만
    다크 테마를 따라간다. 글자색은 페이지에서 상속까지 받아 흰 배경에 흰 글자가 된다.
    말풍선은 항상 밝으므로 전경색을 어둡게 고정한다. */
-.gm-style-iw-d, .gm-style-iw-d * { color: #111; }
+/* 링크는 제외한다 — 말풍선 안 아고다 링크가 본문색에 먹히면 안 된다. */
+.gm-style-iw-d, .gm-style-iw-d *:not(a) { color: #111; }
 .gm-style-iw button.gm-ui-hover-effect > span { background-color: #5f6368 !important; }

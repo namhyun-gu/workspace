@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SCREENED, type Hotel } from "@/data/hotels";
 import {
-  ALL, FILTERS, GC, PICKS, SORTS, areaCell, gmapDir, gmapSearch, grp, walkTxt, won,
+  ALL, FILTERS, GC, PICKS, SORTS, agodaUrl, areaCell, gmapDir, gmapSearch, grp, walkTxt, won,
   type FilterKey, view,
 } from "@/lib/hotel";
 import ScanTable from "@/components/ScanTable";
@@ -171,6 +171,14 @@ export default function App() {
               "핀을 누르면 호텔이 선택됩니다."
             )}
           </p>
+          <a
+            className="mt-1.5 block rounded-[10px] border border-link bg-link py-2.5 text-center text-[13px] font-semibold text-surface-0 no-underline"
+            href={agodaUrl(sel ?? ALL[0])}
+            target="_blank"
+            rel="noopener"
+          >
+            {sel ? `${sel.short} 아고다에서 보기` : "아고다에서 요금 보기"}
+          </a>
           <div className="mt-1.5 flex gap-2">
             <a
               className="flex-1 rounded-[10px] border border-hair bg-surface-2 py-2.5 text-center text-[13px] font-semibold text-ink-1 no-underline"

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { LANDMARKS, type Hotel } from "@/data/hotels";
-import { GC, grp, walkTxt, won, areaCell, gmapSearch, gmapDir } from "@/lib/hotel";
+import { GC, agodaUrl, grp, walkTxt, won, areaCell, gmapSearch, gmapDir } from "@/lib/hotel";
 import { gmapsKey, gmapsMapId, loadGmaps } from "@/lib/gmaps";
 
 type Props = { rows: Hotel[]; onPick: (h: Hotel) => void; dark: boolean };
@@ -8,10 +8,15 @@ type Status = "loading" | "ready" | "nokey" | "error";
 
 const NAHA = { lat: 26.2155, lng: 127.6855 };
 
+const esc = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
 const popupHTML = (h: Hotel) =>
-  `<b>${h.name}</b>${won(h.price)} · 3박 ${won(h.price * 3)}<br>` +
+  `<b>${esc(h.name)}</b>${won(h.price)} · 3박 ${won(h.price * 3)}<br>` +
   `${areaCell(h)} · 2인 ${h.avail}종 · 평점 ${h.score.toFixed(1)}<br>` +
-  `국제거리 ${walkTxt(h)} · 시장 ${h.market}분`;
+  `국제거리 ${walkTxt(h)} · 시장 ${h.market}분<br>` +
+  `<a href="${esc(agodaUrl(h))}" target="_blank" rel="noopener" ` +
+  `style="display:inline-block;margin-top:7px;font-weight:700;color:#1d5175">아고다에서 요금 보기 →</a>`;
 
 /** 번호 핀. AdvancedMarkerElement는 content의 하단 중앙을 좌표에 맞추므로 wrap에서 절반 내린다. */
 function pinEl(h: Hotel, n: number) {

@@ -128,6 +128,29 @@ localStorage.gmapsMapId = "...";     // 선택. 없으면 DEMO_MAP_ID
 - 산점도는 좁은 화면에서 **viewBox 자체를 줄인다**(`useCompact`). 안 그러면 11px 축 글씨가
   4px로 축소돼 안 읽힌다. 폰트 크기를 키우는 것으로는 해결되지 않는다.
 
+### 외부 링크 (아고다 · 구글 지도)
+
+`src/lib/hotel.ts`의 `agodaUrl` · `gmapSearch` · `gmapDir`. 데이터에 URL이나 place ID가 없어
+영문명에서 만들어 낸다. **29곳 전부 2026-08-17에 실제 응답으로 확인했다.**
+
+- **아고다 상세 URL 형식은 `/ko-kr/<슬러그>/hotel/<지역>-jp.html`.** 지역은 `naha-jp`가 아니라
+  대부분 **`okinawa-main-island-jp`** 다 (`naha-jp`로 만들면 404다).
+  슬러그는 영문명 소문자·하이픈이면 29곳 중 24곳이 맞고, 나머지 5곳만 `AGODA_PATH`에 예외로 뒀다.
+  아고다가 아예 다른 이름으로 등록한 곳들이다 — 예: THE CUBE → `abest-cube-...`,
+  ART STAY → `hotel-wbf-art-stay-...`, 류진은 지역까지 다르다(`zamami-jp`).
+- **검증은 반드시 fetch 상태 코드로 할 것.** 아고다 페이지는 클라이언트 렌더링이라
+  원격 HTML에는 제목·og 태그가 없고, **200을 주면서 화면에서만 not-found로 넘기는 경우가 있다.**
+  본문 문자열 매칭은 위양성이 난다. 아고다 오리진에서:
+  ```js
+  const r = await fetch('/ko-kr/<슬러그>/hotel/okinawa-main-island-jp.html');
+  r.status // 404면 잘못된 슬러그. 200이면 r.url이 카노니컬로 리다이렉트된다
+  ```
+- `textToSearch` 파라미터는 검색을 필터링하지 않는다. 도시 검색(`city=18820`)만 유효하다.
+- **구글 지도는 좌표가 아니라 이름으로 열어야** 사진·리뷰가 있는 실제 장소 페이지가 뜬다.
+  다만 이름만 넘기면 보는 사람 위치에 따라 동명 호텔이 잡힐 수 있어
+  `/maps/search/<이름>/@<위도>,<경도>,17z`로 화면을 좌표에 고정한다.
+  **길찾기만은 좌표를 쓴다** — 목적지를 이름으로 넘기면 출발지 근처에서 찾는다.
+
 ### 최종본 다시 빌드하는 방법
 
 원래 절차는 `web-artifacts-builder` 스킬의 `scripts/bundle-artifact.sh` 한 방이다.
